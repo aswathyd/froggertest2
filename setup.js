@@ -1,4 +1,3 @@
-// global variables
 var sprites, deadFrogSprite, canvas, ctx;
 var width = 399, height = 565;
 var timeInterval, laneSize = 35, colSize = 42;
@@ -14,14 +13,10 @@ var directions = {
 	right: "right",
 	down: "down"
 };
-
-// ensures everything loads immediately on page load
 $(document).ready(function() {
 	initHighScores();
 	startGame();
 });
-
-// Initializes the game
 function startGame() {
 	sprites = new Image();
 	sprites.src = "assets/frogger_sprites.png";
@@ -33,27 +28,21 @@ function startGame() {
 	$(deadFrogSprite).load(function() {
 		canvas = $("#game")[0];
 		if (canvas.getContext) {
-			// browser supports canvas
 			init();
 			ctx = canvas.getContext("2d");
 			runGame();
 			eventListener();
 		} else {
-			// browser doesn't support canvas
 			alert("Your browser doesn't support the game. Sorry!");
 		}
 	});
 }
-
-// Starts the initializing process!!
 function init() {
 	initVariables();
 	initObjects();
 	initClickDivs();
 	loadHighScores();
 }
-
-// Initializes variables
 function initVariables() {
 	timeInterval = 40;	// milliseconds	
 	score = 0;
@@ -69,8 +58,6 @@ function initVariables() {
 	isUpArrow = false;
 	clickOn = false;
 }
-
-// Initializes objects
 function initObjects() {
 	initFrogger();
 	initVehicles();
@@ -80,12 +67,10 @@ function initObjects() {
 	initBadlands();
 	initFrogsHome();
 }
-
 function initFrogger() {
 	frogger = new frog(directions.up);
 	frogger.reset();
 }
-
 function initVehicles() {
 	vehicles = new Array();
 	vehicles.push(vehicleLibrary.pink);
@@ -94,7 +79,6 @@ function initVehicles() {
 	vehicles.push(vehicleLibrary.tank);
 	vehicles.push(vehicleLibrary.truck);
 }
-
 function initLogs() {
 	logs = new Array();	
 	logs.push(logLibrary.longRight);
@@ -103,7 +87,6 @@ function initLogs() {
 	logs.push(logLibrary.longLeft);
 	logs.push(logLibrary.shortRight);
 }
-
 function initInlets() {
 	inlets = new Array();
 	inlets[0] = {
@@ -117,7 +100,6 @@ function initInlets() {
 		inlets[0].xCoords[i] = 12 + i * 85;
 	}
 }
-
 function initBadlands() {
 	badlands = new Array();
 	badlands[0] = {
@@ -131,8 +113,6 @@ function initBadlands() {
 		badlands[0].xCoords[i] = 52 + i * 85;
 	}
 }
-
-// Randomizes the fly's presence and location
 function initFly() {
 	fly = new Array();
 	fly[0] = {
@@ -154,13 +134,10 @@ function initFly() {
 function initFrogsHome() {
 	frogsHome = new Array();
 }
-
-// the click div lets the player play again
 function initClickDivs() {
 	initClickDiv("Play");
 	initClickDiv("Submit");
 }
-
 function initClickDiv(name) {
 	if (document.getElementById("click" + name) != null) {
 		return;
@@ -169,8 +146,6 @@ function initClickDiv(name) {
 	div.id = "click" + name;
 	document.getElementById("game_div").appendChild(div);
 }
-
-// Checks the local storage for a value (i.e., the high score)
 function getLocalStorage(name) {
 	for (key in localStorage) {
 		if (key == name) {
@@ -179,7 +154,6 @@ function getLocalStorage(name) {
 	}
 	return 0;
 }
-
 function initHighScores() {
 	var div = document.createElement("div");
 	initHighScoresHeader(div);
@@ -189,7 +163,6 @@ function initHighScores() {
 	$("body").append(div);
 	$(div).append(scoresDiv);
 }
-
 function loadHighScores() {
 	$("#scoresData").empty();
 	var getURL = "http://vast-tundra-5648.herokuapp.com/highscores.json";
@@ -201,7 +174,6 @@ function loadHighScores() {
 		}
 	});
 }
-
 function initHighScoresHeader(div) {
 	var header = document.createElement("div");
 	header.id = "highScoresHeader";
@@ -219,7 +191,6 @@ function initHighScoresHeader(div) {
 	$(header).append(scoreDiv);
 	$(header).append(dateDiv);
 }
-
 function addHighScore(data, rank) {
 	var row = document.createElement("div");
 	row.classList.add("highScore");
@@ -244,8 +215,6 @@ function addHighScore(data, rank) {
 	$(row).append(scoreDiv);
 	$(row).append(dateDiv);
 }
-
-// object constructor for most objects (vehicles, logs, inlets, etc.)
 function objectArray(sX, sY, w, h, y, n, s, d) {
 	this.spriteX = sX;
 	this.spriteY = sY;
@@ -276,7 +245,6 @@ var vehicleLibrary = {
 	tank: new objectArray(12, 302, 24, 21, 350, 5, 2, directions.right),
 	truck: new objectArray(104, 302, 46, 18, 315, 3, 2, directions.left)
 }
-
 var logLibrary = {
 	shortRight: new objectArray(10, 230, 85, 21, 110, 3, 3, directions.right),
 	shortLeft: new objectArray(10, 230, 85, 21, 215, 3, 3, directions.left),
@@ -285,8 +253,6 @@ var logLibrary = {
 	longRight: new objectArray(10, 166, 180, 22, 250, 2, 3, directions.right),
 	longLeft: new objectArray(10, 166, 180, 22, 145, 2, 3, directions.left)
 }
-
-// Frogger!!!
 function frog(d, x, y) {
 	this.direction = d;
 	if (this.direction == directions.left) {
@@ -360,25 +326,20 @@ function drawGame() {
 	drawFrogsHome();
 	drawFly();
 }
-
 function drawWater() {
 	ctx.fillStyle = "#191970";
 	ctx.fillRect(0, 0, width, 290);
 }
-
 function drawRoad() {
 	ctx.fillStyle = "#000000";
 	ctx.fillRect(0, 283, width, 282);
 }
-
 function drawRoadside(y) {
 	ctx.drawImage(sprites, 0, 120, 399, 34, 0, y, 399, 34);
 }
-
 function drawHeader() {
 	ctx.drawImage(sprites, 0, 0, 399, 110, 0, 0, 399, 110);
 }
-
 function drawFooter() {
 	ctx.fillStyle = "#00FF00";
 	ctx.font = "20px Arial";
@@ -390,13 +351,11 @@ function drawFooter() {
 	}
 	drawTimer();
 }
-
 function drawTimer() {
 	var x = time / 1000 * timeInterval * 4;
 	ctx.fillStyle = "#00FF00";
 	ctx.fillRect(399 - x, 545, 399, 565);
 }
-
 function drawMovingObjects(objectArray) {
 	for (i = 0; i < objectArray.length; i++) {
 		for (j = 0; j < objectArray[i].num; j++) {
@@ -404,19 +363,15 @@ function drawMovingObjects(objectArray) {
 		}
 	}
 }
-
 function drawFrog(frog) {
 	ctx.drawImage(sprites, frog.spriteX, frog.spriteY, frog.width, frog.height, frog.x, frog.y, frog.width, frog.height);
 }
-
 function drawMovingFrog() {
 	ctx.drawImage(sprites, frogger.spriteJumpX, frogger.spriteJumpY, frogger.jumpWidth, frogger.jumpHeight, frogger.jumpX, frogger.jumpY, frogger.jumpWidth, frogger.jumpHeight);
 }
-
 function drawDeadFrog() {
 	ctx.drawImage(deadFrogSprite, 5, 4, 18, 24, deadFrog.x, deadFrog.y, 18, 24);
 }
-
 function drawDeadFrogMsg() {
 	ctx.fillStyle = "#00FF00";
 	ctx.fillRect(45, 207, 300, 150);
@@ -426,17 +381,14 @@ function drawDeadFrogMsg() {
 	ctx.font = "36px Arial";
 	ctx.fillText("Frogger has died", 60, 290);
 }
-
 function drawFly() {
 	ctx.drawImage(sprites, 140, 235, fly[0].width, fly[0].height, fly[0].xCoords[0], fly[0].y, fly[0].width, fly[0].height);
 }
-
 function drawFrogsHome() {
 	for (i = 0; i < frogsHome.length; i++) {
 		drawFrog(frogsHome[i].homeFrog);
 	}
 }
-
 function drawGameOver() {
 	ctx.fillStyle = "#00FF00";
 	ctx.fillRect(45, 197, 300, 170);
@@ -453,8 +405,6 @@ function drawGameOver() {
 		ctx.fillText("New high score: " + highScore, 115, 285);
 	}
 }
-
-// Contains the game loop, which runs different functions depending on the game status
 function runGame() {
 	setInterval(function() {
 		if (time > 0) {
@@ -470,31 +420,23 @@ function runGame() {
 		}
 	}, timeInterval);
 }
-
-// Runs while the frog is dead
 function runDeath() {
 	drawGame();
 	drawDeadFrog();
 	drawDeadFrogMsg();
 	deathPause--;
 }
-
-// Runs when the frog moves
 function runMove() {
 	update();
 	drawGame();
 	drawMovingFrog();
 	movePause--;
 }
-
-// Runs when nothing in the game has changed (i.e., the frog is alive and hasn't moved)
 function runRegular() {
 	update();
 	drawGame();
 	drawFrog(frogger);
 }
-
-// Runs when the game is over
 function runEndGame() {
 	drawGame();
 	deadFrog = {
@@ -502,7 +444,7 @@ function runEndGame() {
 		y: frogger.y
 	}
 	drawDeadFrog();
-	clickOn = true;		// allows user to play again
+	clickOn = true;		 
 	time = 0;
 	if (score > highScore) {
 		highScore = score;
@@ -511,8 +453,6 @@ function runEndGame() {
 	}
 	drawGameOver();
 }
-
-// Updates the coordinates of objects that may move and then checks for events such as the frog reaching an inlet
 function update() {
 	updateMovingObjects(vehicles);
 	updateMovingObjects(logs);
@@ -529,8 +469,6 @@ function update() {
 	}
 	time--;
 }
-
-// Adjusts the positions of objects in an array
 function updateMovingObjects(objectArray) {
 	for (i = 0; i < objectArray.length; i++) {
 		for (j = 0; j < objectArray[i].num; j++) {
@@ -550,8 +488,6 @@ function updateMovingObjects(objectArray) {
 		}
 	}
 }
-
-// Adjusts the fly so that it is only present sometimes and moves randomly
 function updateFly() {
 	if (fly[0].isActive) {
 		if (fly[0].intervalsActive == 0) {
@@ -564,9 +500,6 @@ function updateFly() {
 		initFly();
 	}
 }
-
-// Determines whether there is a collision between the frog and any objects in the argument array
-// Moves the frog with the object it's touching if isMoving is true (e.g., for logs)
 function isCollisionWith(objectArray, isMoving) {
 	var xSpan, ySpan;
 	for (i = 0; i < objectArray.length; i++) {
@@ -583,8 +516,6 @@ function isCollisionWith(objectArray, isMoving) {
 	}
 	return false;
 }
-
-// Moves the frog with the object it's on (e.g., a log)
 function moveFrogWith(object) {
 	if (object.direction == directions.left) {
 		frogger.x -= object.speed;
@@ -592,19 +523,12 @@ function moveFrogWith(object) {
 		frogger.x += object.speed;
 	}
 }
-
-// Checks whether the frog is in an unoccupied inlet (and not on the green land!)
 function isHome() {
 	return isCollisionWith(inlets, false) && !isCollisionWith(frogsHome, false) && !isCollisionWith(badlands, false);
 }
-
-// Checks whether the frog is now dead
-// Won't run if isHome() is true and so doesn't need to check if the frog is in an inlet
 function isCollisionDeath() {
 	return isCollisionWith(vehicles, false) || (frogger.y < 262 && (!isCollisionWith(logs, true) || (frogger.x <= 0 || frogger.x + frogger.width >= 399) || isCollisionWith(badlands, false)));
 }
-
-// Updates objects (e.g., resets frog's position) on frog's death
 function updateCollisionDeath() {
 	deadFrog = {
 		x: frogger.x,
@@ -621,8 +545,6 @@ function updateCollisionDeath() {
 		movePause = 0;
 	}
 }
-
-// Updates objects (e.g., frogsHome) when the frog reaches an unoccupied inlet
 function updateHome() {
 	score += 50 + Math.round(time * (timeInterval / 1000));
 	numHome++;
@@ -638,8 +560,6 @@ function updateHome() {
 		increaseLevel();
 	}
 }
-
-// Adds to the frogsHome object when the frog reaches an unoccupied inlet
 function updateFrogsHome() {
 	var x;
 	if (frogger.x <= 95) {
@@ -663,23 +583,17 @@ function updateFrogsHome() {
 	});
 	frogsHome[frogsHome.length - 1].xCoords[0] = frogsHome[frogsHome.length - 1].homeFrog.x;
 }
-
-// Increases the level and difficulty when 5 frogs reach inlets
 function increaseLevel() {
 	level++;
 	initObjects();
 	increaseSpeed(vehicles);
 	increaseSpeed(logs);
 }
-
-// Increases the speed of moving objects
 function increaseSpeed(objectArray) {
 	for (i = 0; i < objectArray.length; i++) {
 		objectArray[i].speed++;
 	}
 }
-
-// Contains the game's event listeners for arrow keys (if game is running and frog is alive) and clicks to play again (if game is over)
 function eventListener() {
 	$(document).keydown(function(event) {
 		var arrow = {
@@ -721,7 +635,6 @@ function eventListener() {
 		}
 	});
 }
-
 function submitScore() {
 	var username = window.prompt("Please enter your username:");
 	while (username == null || username == "") {
