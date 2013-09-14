@@ -1,0 +1,56 @@
+canvas {
+    background-color: #cb630a;
+    padding: 5px;
+    margin: 10px;
+    border-width: 60px;
+    border-color: #010101;
+    border-style: solid;
+}
+
+body {
+    background-color: #128138;
+}
+
+#game_div{
+    text-align: center;
+}
+
+#clickPlay {
+	opacity: 0;
+	width: 100px;
+	height: 25px;
+	position: absolute;
+	top: 410px;
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#clickSubmit {
+	opacity: 0;
+	width: 150px;
+	height: 25px;
+	position: absolute;
+	top: 380px;
+	left: 0;
+	right: 0;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#highScores {
+	width: 60%;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: black;
+	color: #128138;
+}
+
+#highScoresHeader *, .highScore * {
+	display: inline-block;
+	width: 25%;
+	text-align: center;
+	margin: 0;
+	font-family: Arial;
+}
