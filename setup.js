@@ -1,105 +1,246 @@
-function drawGame() {
-	drawWater();
-	drawRoad();
-	drawRoadside(277);
-	drawRoadside(486);
-	drawHeader();
-	drawFooter();
-	drawMovingObjects(vehicles);
-	drawMovingObjects(logs);
-	drawFrogsHome();
-	drawFly();
+// global variables
+var sprites, deadFrogSprite, canvas, ctx;
+var width = 399, height = 565;
+var timeInterval, laneSize = 35, colSize = 42;
+var score, highScore, isNewHighScore;
+var seconds, time, level;
+var numLives, gameOver, numHome;
+var frogger, deadFrog, vehicles, logs, fly;
+var inlets, badlands, frogsHome;
+var movePause, deathPause, isUpArrow, clickOn;
+var directions = {
+	left: "left",
+	up: "up",
+	right: "right",
+	down: "down"
+};
+
+// ensures everything loads immediately on page load
+$(document).ready(function() {
+	initHighScores();
+	startGame();
+});
+
+// Initializes the game
+function startGame() {
+	sprites = new Image();
+	sprites.src = "assets/frogger_sprites.png";
+	deadFrogSprite = new Image();
+	deadFrogSprite.src = "assets/dead_frog.png";
+	$(sprites).load(function() {
+		return;
+	});
+	$(deadFrogSprite).load(function() {
+		canvas = $("#game")[0];
+		if (canvas.getContext) {
+			// browser supports canvas
+			init();
+			ctx = canvas.getContext("2d");
+			runGame();
+			eventListener();
+		} else {
+			// browser doesn't support canvas
+			alert("Your browser doesn't support the game. Sorry!");
+		}
+	});
 }
 
-function drawWater() {
-	ctx.fillStyle = "#191970";
-	ctx.fillRect(0, 0, width, 290);
+// Starts the initializing process!!
+function init() {
+	initVariables();
+	initObjects();
+	initClickDivs();
+	loadHighScores();
 }
 
-function drawRoad() {
-	ctx.fillStyle = "#000000";
-	ctx.fillRect(0, 283, width, 282);
+// Initializes variables
+function initVariables() {
+	timeInterval = 40;	// milliseconds	
+	score = 0;
+	highScore = getLocalStorage("highScore");
+	ifNewHighScore = false;
+	seconds = 30;
+	time = seconds * (1000 / timeInterval);
+	level = 1;
+	numLives = 5;
+	numHome = 0;
+	movePause = 0;
+	deathPause = 0;
+	isUpArrow = false;
+	clickOn = false;
 }
 
-function drawRoadside(y) {
-	ctx.drawImage(sprites, 0, 120, 399, 34, 0, y, 399, 34);
+// Initializes objects
+function initObjects() {
+	initFrogger();
+	initVehicles();
+	initLogs();
+	initFly();
+	initInlets();
+	initBadlands();
+	initFrogsHome();
 }
 
-function drawHeader() {
-	ctx.drawImage(sprites, 0, 0, 399, 110, 0, 0, 399, 110);
+function initFrogger() {
+	frogger = new frog(directions.up);
+	frogger.reset();
 }
 
-function drawFooter() {
-	ctx.fillStyle = "#00FF00";
-	ctx.font = "20px Arial";
-	ctx.fillText("Level " + level, 95, 545);
-	ctx.font = "14px Arial";
-	ctx.fillText("Score: " + score + "\t\t\t\t\t\t\t\t\t\tHigh Score: " + highScore, 2, 563);
-	for (i = 0; i < numLives; i++) {
-		ctx.drawImage(sprites, 10, 335, 20, 20, i * 12, 535, 12, 12);
+function initVehicles() {
+	vehicles = new Array();
+	vehicles.push(vehicleLibrary.pink);
+	vehicles.push(vehicleLibrary.white);
+	vehicles.push(vehicleLibrary.yellow);
+	vehicles.push(vehicleLibrary.tank);
+	vehicles.push(vehicleLibrary.truck);
+}
+
+function initLogs() {
+	logs = new Array();	
+	logs.push(logLibrary.longRight);
+	logs.push(logLibrary.shortLeft);
+	logs.push(logLibrary.mediumRight);
+	logs.push(logLibrary.longLeft);
+	logs.push(logLibrary.shortRight);
+}
+
+function initInlets() {
+	inlets = new Array();
+	inlets[0] = {
+		y: 70,
+		width: 30,
+		height: 30,
+		num: 5,
+		xCoords: new Array()
 	}
-	drawTimer();
+	for (i = 0; i < inlets[0].num; i++) {
+		inlets[0].xCoords[i] = 12 + i * 85;
+	}
 }
 
-function drawTimer() {
-	var x = time / 1000 * timeInterval * 4;
-	ctx.fillStyle = "#00FF00";
-	ctx.fillRect(399 - x, 545, 399, 565);
+function initBadlands() {
+	badlands = new Array();
+	badlands[0] = {
+		y: 0,
+		width: 35,
+		height: 95,
+		num: 4,
+		xCoords: new Array()
+	}
+	for (i = 0; i < badlands[0].num; i++) {
+		badlands[0].xCoords[i] = 52 + i * 85;
+	}
 }
 
-function drawMovingObjects(objectArray) {
-	for (i = 0; i < objectArray.length; i++) {
-		for (j = 0; j < objectArray[i].num; j++) {
-			ctx.drawImage(sprites, objectArray[i].spriteX, objectArray[i].spriteY, objectArray[i].width, objectArray[i].height, objectArray[i].xCoords[j], objectArray[i].y, objectArray[i].width, objectArray[i].height);
+// Randomizes the fly's presence and location
+function initFly() {
+	fly = new Array();
+	fly[0] = {
+		y: 80,
+		width: 16,
+		height: 16,
+		num: 1,
+		isActive: Math.floor(Math.random() * 100) == 1,
+		intervalsActive: Math.floor(Math.random() * 10) * 3 + 100,
+		xCoords: new Array()
+	}
+	if (fly[0].isActive) {
+		fly[0].xCoords[0] = 18 + (Math.floor(Math.random() * 5)) * 85;
+	} else {
+		fly[0].xCoords[0] = -1000;
+	}
+}
+
+function initFrogsHome() {
+	frogsHome = new Array();
+}
+
+// the click div lets the player play again
+function initClickDivs() {
+	initClickDiv("Play");
+	initClickDiv("Submit");
+}
+
+function initClickDiv(name) {
+	if (document.getElementById("click" + name) != null) {
+		return;
+	}
+	var div = document.createElement("div");
+	div.id = "click" + name;
+	document.getElementById("game_div").appendChild(div);
+}
+
+// Checks the local storage for a value (i.e., the high score)
+function getLocalStorage(name) {
+	for (key in localStorage) {
+		if (key == name) {
+			return localStorage[key];
 		}
 	}
+	return 0;
 }
 
-function drawFrog(frog) {
-	ctx.drawImage(sprites, frog.spriteX, frog.spriteY, frog.width, frog.height, frog.x, frog.y, frog.width, frog.height);
+function initHighScores() {
+	var div = document.createElement("div");
+	initHighScoresHeader(div);
+	div.id = "highScores";
+	var scoresDiv = document.createElement("div");
+	scoresDiv.id = "scoresData";
+	$("body").append(div);
+	$(div).append(scoresDiv);
 }
 
-function drawMovingFrog() {
-	ctx.drawImage(sprites, frogger.spriteJumpX, frogger.spriteJumpY, frogger.jumpWidth, frogger.jumpHeight, frogger.jumpX, frogger.jumpY, frogger.jumpWidth, frogger.jumpHeight);
+function loadHighScores() {
+	$("#scoresData").empty();
+	var getURL = "http://vast-tundra-5648.herokuapp.com/highscores.json";
+	$.get(getURL, {
+		game_title: "Frogger"
+	}, "json").done(function(data) {
+		for (var i in data) {
+			addHighScore(data[i], Number(i) + 1);
+		}
+	});
 }
 
-function drawDeadFrog() {
-	ctx.drawImage(deadFrogSprite, 5, 4, 18, 24, deadFrog.x, deadFrog.y, 18, 24);
+function initHighScoresHeader(div) {
+	var header = document.createElement("div");
+	header.id = "highScoresHeader";
+	var rank = document.createElement("div");
+	rank.innerHTML = "<h3>Rank</h3>";
+	var username = document.createElement("div");
+	username.innerHTML = "<h3>Username</h3>";
+	var scoreDiv = document.createElement("div");
+	scoreDiv.innerHTML = "<h3>Score</h3>";
+	var dateDiv = document.createElement("div");
+	dateDiv.innerHTML = "<h3>Date</h3>";
+	$(div).append(header);
+	$(header).append(rank);
+	$(header).append(username);
+	$(header).append(scoreDiv);
+	$(header).append(dateDiv);
 }
 
-function drawDeadFrogMsg() {
-	ctx.fillStyle = "#00FF00";
-	ctx.fillRect(45, 207, 300, 150);
-	ctx.fillStyle = "#000000";
-	ctx.fillRect(55, 216, 280, 130);
-	ctx.fillStyle = "#00FF00";
-	ctx.font = "36px Arial";
-	ctx.fillText("Frogger has died", 60, 290);
-}
-
-function drawFly() {
-	ctx.drawImage(sprites, 140, 235, fly[0].width, fly[0].height, fly[0].xCoords[0], fly[0].y, fly[0].width, fly[0].height);
-}
-
-function drawFrogsHome() {
-	for (i = 0; i < frogsHome.length; i++) {
-		drawFrog(frogsHome[i].homeFrog);
-	}
-}
-
-function drawGameOver() {
-	ctx.fillStyle = "#00FF00";
-	ctx.fillRect(45, 197, 300, 170);
-	ctx.fillStyle = "#000000";
-	ctx.fillRect(55, 206, 280, 150);
-	ctx.fillStyle = "#00FF00";
-	ctx.font = "36px Arial";
-	ctx.fillText("Game Over", 105, 245);
-	ctx.font = "18px Arial";
-	ctx.fillText("Submit Score", 147, 320);
-	ctx.fillText("Play Again", 160, 345);
-	if (isNewHighScore) {
-		ctx.fillStyle = "#FFFFFF";
-		ctx.fillText("New high score: " + highScore, 115, 285);
-	}
+function addHighScore(data, rank) {
+	var row = document.createElement("div");
+	row.classList.add("highScore");
+	var rankDiv = document.createElement("div");
+	rankDiv.innerHTML = "<p>" + rank + ".</p>";
+	rankDiv.classList.add("rank");
+	var username = document.createElement("div");
+	username.innerHTML = "<p>" + data.username + "</p>";
+	username.classList.add("username");
+	var scoreDiv = document.createElement("div");
+	scoreDiv.innerHTML = "<p>" + data.score + "</p>";
+	scoreDiv.classList.add("score");
+	var date = new Date(data.created_at);
+	var dateDiv = document.createElement("div");
+	dateDiv.innerHTML = "<p>" + (date.getMonth() + 1) +
+				"/" + date.getDate() + "/"
+				+ date.getFullYear() + "</p>";
+	dateDiv.classList.add("date");
+	$("#scoresData").append(row);
+	$(row).append(rankDiv);
+	$(row).append(username);
+	$(row).append(scoreDiv);
+	$(row).append(dateDiv);
 }
